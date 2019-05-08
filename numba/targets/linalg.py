@@ -765,9 +765,11 @@ def _inv_err_handler(r):
             fatal_error_func()
             assert 0   # unreachable
         if r > 0:
-            raise np.linalg.LinAlgError(
-                "Matrix is singular to machine precision.")
-
+            #raise np.linalg.LinAlgError(
+            #    "Matrix is singular to machine precision.")
+            return -1
+    return 0
+    
 @register_jitable
 def _dummy_liveness_func(a):
     """pass a list of variables to be preserved through dead code elimination"""
@@ -807,10 +809,12 @@ def inv_impl(a):
         ipiv = np.empty(n, dtype=F_INT_nptype)
 
         r = numba_xxgetrf(kind, n, n, acpy.ctypes, n, ipiv.ctypes)
-        _inv_err_handler(r)
+        e = _inv_err_handler(r)
+        if e == -1: return None
 
         r = numba_xxgetri(kind, n, acpy.ctypes, n, ipiv.ctypes)
-        _inv_err_handler(r)
+        e = _inv_err_handler(r)
+        if e == -1: return None
 
         # help liveness analysis
         _dummy_liveness_func([acpy.size, ipiv.size])
@@ -2382,7 +2386,7 @@ def cond_impl(a, p=None):
         if p in (None, types.none):
             def cond_none_impl(a, p=None):
                 s = _compute_singular_values(a)
-                return s[0] / s[-1]
+                return np.true_divide(s[0], s[-1])
             return cond_none_impl
         else:
             def cond_not_none_impl(a, p=None):
