@@ -765,8 +765,11 @@ def _inv_err_handler(r):
             fatal_error_func()
             assert 0   # unreachable
         if r > 0:
-            raise np.linalg.LinAlgError(
-                "Matrix is singular to machine precision.")
+            # raise np.linalg.LinAlgError(
+            #     "Matrix is singular to machine precision.")
+            # return None when singular TODO: Issue a warning?
+            return False
+    return True
 
 @register_jitable
 def _dummy_liveness_func(a):
@@ -807,10 +810,16 @@ def inv_impl(a):
         ipiv = np.empty(n, dtype=F_INT_nptype)
 
         r = numba_xxgetrf(kind, n, n, acpy.ctypes, n, ipiv.ctypes)
-        _inv_err_handler(r)
+        valid = _inv_err_handler(r)
+        if not valid:
+            acpy = None
+            return acpy
 
         r = numba_xxgetri(kind, n, acpy.ctypes, n, ipiv.ctypes)
-        _inv_err_handler(r)
+        valid = _inv_err_handler(r)
+        if not valid:
+            acpy = None
+            return acpy
 
         # help liveness analysis
         _dummy_liveness_func([acpy.size, ipiv.size])
