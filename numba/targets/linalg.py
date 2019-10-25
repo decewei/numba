@@ -1089,9 +1089,9 @@ if numpy_version >= (1, 8):
             # the case of a runtime decision based domain change relative to
             # the input type, if it is required numba raises as below.
             if np.any(wi):
-                raise ValueError(
-                    "eigvals() argument must not cause a domain change.")
-
+                # raise ValueError(
+                #     "eigvals() argument must not cause a domain change.")
+                nr = None
             # put these in to help with liveness analysis,
             # `.ctypes` doesn't keep the vars alive
             _dummy_liveness_func([acpy.size, vl.size, vr.size, wr.size, wi.size])
