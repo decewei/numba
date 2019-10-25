@@ -1970,6 +1970,7 @@ class TestNPFunctions(MemoryLeakMixin, TestCase):
                     _check(params)
 
     @unittest.skipUnless(np_version >= (1, 12), "ediff1d needs Numpy 1.12+")
+    @unittest.skipIf(np_version >= (1, 16), "Known issue on NumPy 1.16+")
     def test_ediff1d_edge_cases(self):
         # NOTE: NumPy 1.16 has a variety of behaviours for type conversion, see
         # https://github.com/numpy/numpy/issues/13103, as this is not resolved
@@ -2434,6 +2435,7 @@ class TestNPFunctions(MemoryLeakMixin, TestCase):
             self.assertIn('y cannot be a scalar', str(e.exception))
 
     @unittest.skipUnless(np_version >= (1, 10), "interp needs Numpy 1.10+")
+    @unittest.skipIf(np_version >= (1, 16), "Known issue on NumPy 1.16+")
     def test_interp_basic(self):
         pyfunc = interp
         cfunc = jit(nopython=True)(pyfunc)
@@ -2654,6 +2656,7 @@ class TestNPFunctions(MemoryLeakMixin, TestCase):
         yield self.rnd.rand(1 + ndata * 2) * 4.0 + 1.3
 
     @unittest.skipUnless(np_version >= (1, 10), "interp needs Numpy 1.10+")
+    @unittest.skipIf(np_version >= (1, 16), "Known issue on NumPy 1.16+")
     def test_interp_stress_tests(self):
         pyfunc = interp
         cfunc = jit(nopython=True)(pyfunc)
