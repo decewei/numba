@@ -294,5 +294,3 @@ further information.
                                   pci bus id: 1
 
 (output truncated due to length)
-
-
