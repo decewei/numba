@@ -765,8 +765,10 @@ def _inv_err_handler(r):
             fatal_error_func()
             assert 0   # unreachable
         if r > 0:
-            raise np.linalg.LinAlgError(
-                "Matrix is singular to machine precision.")
+            #raise np.linalg.LinAlgError(
+            #    "Matrix is singular to machine precision.")
+            return -1
+    return 0
 
 @register_jitable
 def _dummy_liveness_func(a):
@@ -807,10 +809,12 @@ def inv_impl(a):
         ipiv = np.empty(n, dtype=F_INT_nptype)
 
         r = numba_xxgetrf(kind, n, n, acpy.ctypes, n, ipiv.ctypes)
-        _inv_err_handler(r)
+        e = _inv_err_handler(r)
+        if e == -1: return None
 
         r = numba_xxgetri(kind, n, acpy.ctypes, n, ipiv.ctypes)
-        _inv_err_handler(r)
+        e = _inv_err_handler(r)
+        if e == -1: return None
 
         # help liveness analysis
         _dummy_liveness_func([acpy.size, ipiv.size])
@@ -1085,9 +1089,9 @@ if numpy_version >= (1, 8):
             # the case of a runtime decision based domain change relative to
             # the input type, if it is required numba raises as below.
             if np.any(wi):
-                raise ValueError(
-                    "eigvals() argument must not cause a domain change.")
-
+                # raise ValueError(
+                #     "eigvals() argument must not cause a domain change.")
+                nr = None
             # put these in to help with liveness analysis,
             # `.ctypes` doesn't keep the vars alive
             _dummy_liveness_func([acpy.size, vl.size, vr.size, wr.size, wi.size])
